@@ -43,7 +43,7 @@ parse(Input, {re, Pattern}, _Rules) ->
 parse(Input, {re, Pattern, capture, N}, _Rules) ->
   match_regexp(Input, Pattern, N);
 parse(Input, {split, Rule}, Rules) ->
-  case parse(Input, Rule, Rules) of {N, R} when length(R) >= N -> lists:split(N, R); _ -> nomatch end;
+  case parse(Input, Rule, Rules) of {N, R} -> blist_split(N, R); _ -> nomatch end;
 parse(Input, {skip, Rule}, Rules) ->
   case parse(Input, Rule, Rules) of nomatch -> nomatch; {_, R} -> {R}; Match -> Match end;
 parse(Input, {const, Rule, Value}, Rules) ->
@@ -93,23 +93,6 @@ parse(Input, {'1*', Rule}, Rules) ->
       {[Match | Matched], Remainder2}
   end.
 
-match_regexp(Input, Pattern) ->
-  case re:run(Input, Pattern, [anchored, {newline, anycrlf}]) of
-    {match, [{0, N} | _]} ->
-      lists:split(N, Input);
-    nomatch ->
-      nomatch
-  end.
-
-match_regexp(Input, Pattern, Capture) ->
-  case re:run(Input, Pattern, [anchored, {newline, anycrlf}]) of
-    {match, [{0, MatchLength} | Captures]} ->
-      {Start, Length} = lists:nth(Capture, Captures),
-      {lists:sublist(Input, Start + 1, Length), lists:nthtail(MatchLength, Input)};
-    nomatch ->
-      nomatch
-  end.
-
 parse_sequence(Input, [], _Rules, Acc) ->
   {lists:reverse(Acc), Input};
 parse_sequence(Input, [Rule | Sequence], Rules, Acc) ->
@@ -155,28 +138,49 @@ parse_many(Input, Rule, Rules, Acc) ->
 
 match_uchar([]) ->
   nomatch;
-match_uchar([Ch | Input]) ->
-  case xmerl_ucs:is_unicode(Ch) of
+match_uchar([Char | Input]) ->
+  case xmerl_ucs:is_unicode(Char) of
     true ->
-      {Ch, Input};
+      {Char, Input};
     false ->
       nomatch
   end.
 
-match(Input, Rules) when is_list(Rules) ->
-  match_any(Rules, Input);
-match([Ch | Input], Ch) when is_integer(Ch) ->
-  {Ch, Input};
-match(_Input, Ch) when is_integer(Ch) ->
-  nomatch;
-match([Ch | Input], {Min, Max}) ->
-  case Ch >= Min andalso Ch =< Max of
-    true ->
-      {Ch, Input};
-    false ->
+match_regexp(Input, Pattern) ->
+  case re:run(Input, Pattern, [anchored, {newline, anycrlf}]) of
+    {match, [{0, N} | _]} ->
+      blist_split(N, Input);
+    nomatch ->
       nomatch
-  end;
-match(_Input, {_Min, _Max}) ->
+  end.
+
+match_regexp(Input, Pattern, Capture) ->
+  case re:run(Input, Pattern, [anchored, {newline, anycrlf}]) of
+    {match, [{0, MatchLength} | Captures]} ->
+      {blist_slice(Input, lists:nth(Capture, Captures)), blist_nthtail(MatchLength, Input)};
+    nomatch ->
+      nomatch
+  end.
+
+match(Input, {Min, Max}) ->
+  match_char_range(Input, Min, Max);
+match(Input, Char) when is_integer(Char) ->
+  match_char(Input, Char);
+match(Input, Rules) when is_list(Rules) ->
+  match_any(Rules, Input).
+
+match_char([Char | Input], Char) when is_integer(Char) ->
+  {Char, Input};
+match_char(<<Char, Input/bytes>>, Char) when is_integer(Char) ->
+  {Char, Input};
+match_char(_Input, Char) when is_integer(Char) ->
+  nomatch.
+
+match_char_range([Char | Input], Min, Max) when Char >= Min andalso Char =< Max ->
+  {Char, Input};
+match_char_range(<<Char, Input/bytes>>, Min, Max) when Char >= Min andalso Char =< Max ->
+  {Char, Input};
+match_char_range(_Input, _Min, _Max) ->
   nomatch.
 
 match_any([], _Input) ->
@@ -188,3 +192,19 @@ match_any([Rule | Rules], Input) ->
     Match ->
       Match
   end.
+
+blist_slice(Input, PosLen) when is_binary(Input) ->
+  binary_to_list(binary:part(Input, PosLen));
+blist_slice(Input, {Pos, Len}) when is_list(Input) ->
+  lists:sublist(Input, Pos + 1, Len).
+
+blist_nthtail(N, Input) when is_binary(Input) ->
+  element(2, split_binary(Input, N));
+blist_nthtail(N, Input) when is_list(Input) ->
+  lists:nthtail(N, Input).
+
+blist_split(N, Input) when is_binary(Input) ->
+  {H, T} = split_binary(Input, N),
+  {binary_to_list(H), T};
+blist_split(N, Input) when is_list(Input) ->
+  lists:split(N, Input).
