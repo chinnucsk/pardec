@@ -77,6 +77,13 @@
 {test, "abc", nomatch}.
 {test, "2011", {"2011", []}}.
 
+{rule, {split, {unseq, [{map, {'1*', 'DIGIT'}, {erlang, list_to_integer}}, {skip, $:}]}}}.
+{test, "", nomatch}.
+{test, "123", nomatch}.
+{test, "ABC", nomatch}.
+{test, "abc", nomatch}.
+{test, "2:ok", {"ok", []}}.
+
 {rule, {cons, {'*', 'DIGIT'}, {'*', {unseq, [{skip, 'SP'}, {'*', 'DIGIT'}]}}}}.
 {test, "123 456 789", {["123", "456", "789"], []}}.
 
