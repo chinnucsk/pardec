@@ -168,3 +168,6 @@
 {test, <<"123">>, {{number, "123"}, <<>>}}.
 {test, <<"ABC">>, nomatch}.
 {test, <<"abc">>, nomatch}.
+
+{rule, {unseq, [{skip, $"}, {'*', 'CHAR', until, $"}, {skip, $"}]}}.
+{test, "\"abc\"", {"abc", []}}.

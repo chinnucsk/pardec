@@ -84,6 +84,8 @@ parse([], {'*', _Rule}, _Rules) ->
   {[], []};
 parse(Input, {'*', Rule}, Rules) ->
   parse_many(Input, Rule, Rules, []);
+parse(Input, {'*', Rule, until, Lookahead}, Rules) ->
+  parse_many(Input, Rule, Rules, Lookahead, []);
 parse(Input, {'1*', Rule}, Rules) ->
   case parse(Input, Rule, Rules) of
     nomatch ->
@@ -134,6 +136,19 @@ parse_many(Input, Rule, Rules, Acc) ->
       {lists:reverse(Acc), Input};
     {Match, Remainder} ->
       parse_many(Remainder, Rule, Rules, [Match | Acc])
+  end.
+
+parse_many(Input, Rule, Rules, Lookahead, Acc) ->
+  case parse(Input, Lookahead, Rules) of
+    nomatch ->
+      case parse(Input, Rule, Rules) of
+        nomatch ->
+          {lists:reverse(Acc), Input};
+        {Match, Remainder} ->
+          parse_many(Remainder, Rule, Rules, Lookahead, [Match | Acc])
+      end;
+    _Match ->
+      {lists:reverse(Acc), Input}
   end.
 
 match_uchar([]) ->
