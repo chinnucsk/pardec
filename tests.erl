@@ -171,3 +171,13 @@
 
 {rule, {unseq, [{skip, $"}, {'*', 'CHAR', until, $"}, {skip, $"}]}}.
 {test, "\"abc\"", {"abc", []}}.
+
+{rule, {map, {'1*', {either, {char, {$0, $9}}, {char, {$A, $F}}}}, {erlang, list_to_integer, [16]}}}.
+{test, "", nomatch}.
+{test, "123", {291, []}}.
+{test, "ABC", {2748, []}}.
+{test, "abc", nomatch}.
+{test, <<"">>, nomatch}.
+{test, <<"123">>, {291, <<>>}}.
+{test, <<"ABC">>, {2748, <<>>}}.
+{test, <<"abc">>, nomatch}.
