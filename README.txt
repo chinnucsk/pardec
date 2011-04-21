@@ -24,4 +24,4 @@ argument is a list of additional rules.
 The atom 'nomatch' will be returned if the input does not match the top level
 rule, or if it matches the return value will be a {Term, Remainder} tuple.
 
-See tests.erl for more examples.
+See tests.erl or json.escript for more examples.
