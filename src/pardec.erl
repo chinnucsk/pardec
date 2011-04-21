@@ -26,7 +26,7 @@ parse(Input, 'HEXDIGIT', _Rules) ->
 parse(Input, 'CHAR', _Rules) ->
   match(Input, {16#01, 16#7F});
 parse(Input, 'UCHAR', _Rules) ->
-  match_uchar(Input);
+  match_unicode(Input);
 parse(Input, Rule, _Rules) when is_integer(Rule) ->
   match(Input, Rule);
 parse(Input, Key, Rules) when is_atom(Key) ->
@@ -151,9 +151,16 @@ parse_many(Input, Rule, Rules, Lookahead, Acc) ->
       {lists:reverse(Acc), Input}
   end.
 
-match_uchar([]) ->
+match_unicode([]) ->
   nomatch;
-match_uchar([Char | Input]) ->
+match_unicode(<<>>) ->
+  nomatch;
+match_unicode([Char | Input]) ->
+  match_unicode(Char, Input);
+match_unicode(<<Char, Input/bytes>>) ->
+  match_unicode(Char, Input).
+
+match_unicode(Char, Input) ->
   case xmerl_ucs:is_unicode(Char) of
     true ->
       {Char, Input};
