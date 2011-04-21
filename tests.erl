@@ -40,6 +40,18 @@
 {test, <<"abc">>, {$a, <<"bc">>}}.
 {test, <<128>>, nomatch}.
 
+{rule, 'UCHAR'}.
+{test, "", nomatch}.
+{test, "123", {$1, "23"}}.
+{test, "ABC", {$A, "BC"}}.
+{test, "abc", {$a, "bc"}}.
+{test, [128], {128, []}}.
+{test, <<"">>, nomatch}.
+{test, <<"123">>, {$1, <<"23">>}}.
+{test, <<"ABC">>, {$A, <<"BC">>}}.
+{test, <<"abc">>, {$a, <<"bc">>}}.
+{test, <<128>>, {128, <<>>}}.
+
 {rule, ['DIGIT', 'DIGIT']}.
 {test, "", nomatch}.
 {test, "123", {"12", "3"}}.
