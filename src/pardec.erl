@@ -52,6 +52,8 @@ parse(Input, {unseq, Rule}, Rules) ->
   case parse(Input, Rule, Rules) of nomatch -> nomatch; {[Value], R} -> {Value, R}; Match -> Match end;
 parse(Input, {tuple, Rule}, Rules) ->
   case parse(Input, Rule, Rules) of nomatch -> nomatch; {Match, R} -> {list_to_tuple(Match), R} end;
+parse(Input, {item, N, Rule}, Rules) ->
+  case parse(Input, Rule, Rules) of nomatch -> nomatch; {Match, R} -> {lists:nth(N, Match), R} end;
 parse(Input, {tag, Atom, Rule}, Rules) ->
   case parse(Input, Rule, Rules) of nomatch -> nomatch; {Match, R} -> {{Atom, Match}, R} end;
 parse(Input, {optional, Rule}, Rules) ->

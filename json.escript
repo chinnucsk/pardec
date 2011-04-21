@@ -42,15 +42,11 @@ pardec_rules() ->
   , {json_scalar, {either, [json_true, json_false, json_null, json_integer, json_string]}}
   , {json_value, {unseq, [{skip, json_ws}, {either, [json_scalar, json_array, json_object]}]}}
   , {json_keyvalue, {tuple, [{skip, json_ws}, json_string, {skip, $:}, json_value]}}
-  , {json_array, {tag, array, {unseq, [{skip, $[}, comma_sep(json_value), {skip, json_ws}, {skip, $]}]}}}
-  , {json_object, {tag, object, {unseq, [{skip, ${}, comma_sep(json_keyvalue), {skip, json_ws}, {skip, $}}]}}}
-  , {json_string, {unseq, [
-      {skip, $"}
-    , {'*', {either, json_string_escape, {'UCHAR', except, {either, $\\, $"}}}}
-    , {skip, $"}
-    ]}}
+  , {json_array, {tag, array, {item, 2, [$[, comma_sep(json_value), json_ws, $]]}}}
+  , {json_object, {tag, object, {item, 2, [${, comma_sep(json_keyvalue), json_ws, $}]}}}
+  , {json_string, {item, 2, [$", {'*', {either, json_string_escape, {'UCHAR', except, {either, $\\, $"}}}}, $"]}}
   , {json_string_escape, {either, [
-      {unseq, [{skip, $\\}, {skip, $u}, {map, {re, "^[0-9A-F]{4}"}, {erlang, list_to_integer, [16]}}]}
+      {item, 2, ["\\u", {map, {re, "^[0-9A-F]{4}"}, {erlang, list_to_integer, [16]}}]}
     , {const, "\\\"", $"}
     , {const, "\\\\", $\\}
     , {const, "\\/", $/}
