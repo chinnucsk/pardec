@@ -28,6 +28,18 @@
 {test, <<"ABC">>, {$A, <<"BC">>}}.
 {test, <<"abc">>, {$a, <<"bc">>}}.
 
+{rule, 'CHAR'}.
+{test, "", nomatch}.
+{test, "123", {$1, "23"}}.
+{test, "ABC", {$A, "BC"}}.
+{test, "abc", {$a, "bc"}}.
+{test, [128], nomatch}.
+{test, <<"">>, nomatch}.
+{test, <<"123">>, {$1, <<"23">>}}.
+{test, <<"ABC">>, {$A, <<"BC">>}}.
+{test, <<"abc">>, {$a, <<"bc">>}}.
+{test, <<128>>, nomatch}.
+
 {rule, ['DIGIT', 'DIGIT']}.
 {test, "", nomatch}.
 {test, "123", {"12", "3"}}.
