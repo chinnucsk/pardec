@@ -7,5 +7,5 @@ compile:
 	@test -d ebin || mkdir ebin
 	@erl -make
 
-test:
+test: clean compile
 	@escript test.escript
