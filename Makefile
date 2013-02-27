@@ -1,6 +1,11 @@
-all:
+all: clean compile
+
+clean:
+	@rm -rf ebin/*.beam
+
+compile:
 	@test -d ebin || mkdir ebin
 	@erl -make
 
-clean:
-	@rm -rf ebin/* erl_crash.dump
+test:
+	@escript test.escript

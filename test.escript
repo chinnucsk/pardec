@@ -16,5 +16,6 @@ test([{test, Input, Expect} | Data], Rule, N) ->
     Output ->
       io:format("pardec:parse(~p, ~p)~n", [Input, Rule]),
       io:format("output: ~p~n", [Output]),
-      io:format("expect: ~p~n", [Expect])
+      io:format("expect: ~p~n", [Expect]),
+      halt(1)
   end.
